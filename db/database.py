@@ -8,6 +8,28 @@ def get_connection():
     return sqlite3.connect(DATABASE_PATH)
 
 
+def save_prompt(prompt: str):
+    """
+    Save a new prompt into the database.
+    """
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    # 1) Trouver une ligne vide pour le prompt
+    cur.execute(
+        """
+        INSERT INTO moderation_results (prompt)
+        VALUES (?)
+        """,
+        (prompt,),
+    )
+
+    inserted_id = cur.lastrowid
+    conn.commit()
+    conn.close()
+    return inserted_id
+
 def save_analysis(record: dict):
     """
     Save moderation analysis result into the database.
