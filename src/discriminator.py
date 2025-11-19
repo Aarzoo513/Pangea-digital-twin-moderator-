@@ -76,6 +76,8 @@ def moderate_multiple_texts(texts):
 
     print(json.dumps([item['answer'] for item in best_two], ensure_ascii=False, indent=2))
 
+    return json_outputs
+
 
 if __name__ == "__main__":
     test_txt = [
