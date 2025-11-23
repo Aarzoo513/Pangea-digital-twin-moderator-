@@ -6,6 +6,7 @@ from db.database import save_analysis
 
 load_dotenv()
 
+
 def moderate_multiple_texts(texts):
     client = Mistral(api_key=MISTRAL_API_KEY)
     model = "mistral-moderation-latest"
