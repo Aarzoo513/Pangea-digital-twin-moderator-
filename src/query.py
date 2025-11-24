@@ -1,12 +1,11 @@
 from langchain_huggingface import HuggingFaceEmbeddings  # <-- LOCAL Embeddings
-from langchain_community.vectorstores import Chroma       # <-- LOCAL Vector Store
+from langchain_community.vectorstores import Chroma
 from langchain_ollama import ChatOllama               # <-- LOCAL LLM
 from langchain_classic.chains import RetrievalQA
 from langchain_core.prompts import PromptTemplate
-from langchain_classic.chains import LLMChain
+from .run_groq import groq_moderate_prompt
 import random
 import json
-import sys
 import os
 
 # Path to Pangea folder
@@ -21,7 +20,9 @@ from .discriminator import moderate_multiple_texts
 
 # --- 1. Configuration ---
 VECTOR_STORE_PATH = "./chroma_db"
-EMBEDDINGS_MODEL = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+EMBEDDINGS_MODEL = HuggingFaceEmbeddings(
+    model_name="sentence-transformers/all-MiniLM-L6-v2"
+)
 LLM = ChatOllama(model="llama3.1:8b", temperature=0.7)
 
 if not os.path.exists(VECTOR_STORE_PATH):
@@ -143,20 +144,28 @@ while True:
     # Visual cue for the user
     mode_label = "[ RAG]" if rag_mode_on else "[💬 GENERAL CHAT]"
     query = input(f"\n{mode_label} Enter question: ")
-    
+
+    mod = groq_moderate_prompt(query)
+
+    while mod["violation"] == 1:
+        print("\n❌ Question refused due to policy violation.")
+        print(f"Category: {mod.get('category')}")
+        print(f"Rationale: {mod.get('rationale')}")
+        query = input("\nEnter a new question: ")
+        mod = groq_moderate_prompt(query)
+
     if query.lower() == 'exit':
         print("Goodbye!")
         break
-        
+
     if query.lower() == '/toggle':
         rag_mode_on = not rag_mode_on
         state = "ENABLED" if rag_mode_on else "DISABLED"
         print(f"*** RAG Mode is now {state} ***")
         continue
-    
     try:
         print("Thinking...")
-        
+
         if rag_mode_on:
             # Use the RAG pipeline with the 10-answer format
             response = qa_chain.invoke({"question": query})
@@ -171,7 +180,7 @@ while True:
             print("\n--- 10 Diverse Answers ---")
             for i, ans in enumerate(answers, 1):
                 print(f"{i}. {ans}")
-            
+
             # Moderation step
             with open("answers_log.json", "w") as f:
                 json.dump(all_generated_answers, f, indent=4)

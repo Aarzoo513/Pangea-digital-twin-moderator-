@@ -30,6 +30,7 @@ def save_prompt(prompt: str):
     conn.close()
     return inserted_id
 
+
 def save_analysis(record: dict):
     """
     Save moderation analysis result into the database.

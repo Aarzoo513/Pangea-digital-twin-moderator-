@@ -2,6 +2,8 @@ from groq import Groq
 from db.database import save_prompt
 import json
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
 api_key = os.getenv("GROQ_API_KEY", "")
 client = Groq(api_key=api_key)
@@ -41,14 +43,17 @@ Answer: {"violation": 1, "category": "System Exposure", "rationale": "Attempt to
 
 Example 3 (Safe):
 Content: "What are your limitations and what tasks can you help with?"
-Answer: {"violation": 0, "category": null, "rationale": "Legitimate question about capabilities"}
+Answer: {"violation": 0, "category": null,
+"rationale": "Legitimate question about capabilities"}
 
 Example 4 (Safe):
 Content: "Can you help me write a Python script to process CSV files?"
-Answer: {"violation": 0, "category": null, "rationale": "Normal programming assistance request"}
+Answer: {"violation": 0, "category": null,
+ "rationale": "Normal programming assistance request"}
 
 Content to classify: {{USER_INPUT}}
 Answer (JSON only):"""
+
 
 def main():
     # 1) Récupérer le prompt de l'utilisateur dans le terminal
@@ -74,12 +79,12 @@ def main():
     try:
         result = json.loads(raw_content)
     except json.JSONDecodeError:
-        print("⚠️ Erreur : la réponse de la modération n'est pas un JSON valide :")
+        print("⚠️ Erreur : ""la réponse de la modération n'est pas un JSON valide :")
         print(raw_content)
         return
 
     violation = result.get("violation", 0)
-    
+
     # Par sécurité, on essaie de caster en int si possible
     try:
         violation = int(violation)
@@ -113,16 +118,60 @@ def main():
                 violation = int(result.get("violation", 0))
             except (json.JSONDecodeError, ValueError, TypeError):
                 violation = 1  # Toujours refuser en cas d'erreur
-    
+
     # 3) Sinon → enregistrer le prompt dans la DB
     try:
         for _ in range(10):
             save_prompt(user_prompt)
-            
+
         print("\n Prompt accepté et enregistré dans la base de données.")
     except Exception as e:
         print("\n Erreur lors de l'enregistrement du prompt dans la base :")
         print(e)
+
+
+def groq_moderate_prompt(user_prompt: str):
+    """
+    Returns:
+      - moderation result dict
+      - and saves the prompt to DB if safe
+      - and prints status messages
+    """
+
+    # 1. Call Groq moderation model
+    chat_completion = client.chat.completions.create(
+        messages=[
+            {"role": "system", "content": policy},
+            {"role": "user", "content": user_prompt},
+        ],
+        model="openai/gpt-oss-safeguard-20b",
+    )
+
+    raw_content = chat_completion.choices[0].message.content
+
+    # 2. Parse JSON safely
+    try:
+        result = json.loads(raw_content)
+        result["violation"] = int(result.get("violation", 1))
+    except (json.JSONDecodeError, ValueError, TypeError) as e:
+        print("Groq moderation returned invalid JSON or invalid 'violation' field. Blocking prompt.")
+        print(e)
+        return {
+            "violation": 1,
+            "category": "invalid_json",
+            "rationale": raw_content
+        }
+
+    # 3. If prompt is safe → save to DB
+    if result["violation"] == 0:
+        try:
+            save_prompt(user_prompt)
+            print("✅ Prompt accepted and saved in the database.")
+        except Exception as e:
+            print("⚠️ Error while saving the prompt to DB:", e)
+
+    return result
+
 
 if __name__ == "__main__":
     main()
