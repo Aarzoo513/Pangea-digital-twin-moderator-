@@ -29,8 +29,18 @@ def init_database():
             risk_score INTEGER,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
-        """
-                   )
+    """)
+          
+    # Nouvelle table : rejected_prompts
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS rejected_prompts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            prompt TEXT NOT NULL,
+            reason TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    """)
 
     connection.commit()
     connection.close()
