@@ -1,7 +1,7 @@
 import sqlite3
 from config import DATABASE_PATH
 from tabulate import tabulate
-
+import os
 
 def get_connection():
     """Create and return a SQLite connection."""
@@ -130,4 +130,27 @@ def fetch_all():
     headers = ["id", "prompt", "answer", "sexual", "hate_and_discrimination", "violence_and_threats",
                 "dangerous_and_criminal_content", "selfharm", "health", "financial", "law", "pii",
                     "risk_score", "created_at"]
+    return tabulate(rows, headers=headers, tablefmt="grid")
+
+def save_rejected_prompt(prompt: str, reason: str = None):
+    print(os.curdir)
+    conn = sqlite3.connect("data/database.db")
+    cur = conn.cursor()
+
+    cur.execute("""
+        INSERT INTO rejected_prompts (prompt, reason)
+        VALUES (?, ?)
+    """, (prompt, reason))
+
+    conn.commit()
+    conn.close()
+
+def fetch_all_rejected():
+    """Fetch all rows from the moderation_results table."""
+    conn = sqlite3.connect(DATABASE_PATH)
+    cur = conn.cursor()
+    cur.execute("SELECT id, prompt, reason, created_at FROM rejected_prompts ;")
+    rows = cur.fetchall()
+
+    headers = ["id", "prompt", "reason", "created_at"]
     return tabulate(rows, headers=headers, tablefmt="grid")
