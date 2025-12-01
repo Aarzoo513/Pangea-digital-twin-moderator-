@@ -178,7 +178,7 @@ def main():
     # 4) Si violation → afficher un message d’erreur
     while violation == 1:
         try:
-            save_rejected_prompt(user_prompt)
+            save_rejected_prompt(user_prompt, reason=result.get("rationale", "violation"))
             print("📝 Prompt refusé enregistré dans la base des prompts refusés.")
         except Exception as e:
             print("⚠️ Erreur lors de l'enregistrement du prompt refusé :")
@@ -264,7 +264,7 @@ def groq_moderate_prompt(user_prompt: str):
     else:
         # 👉 Prompt refusé → on le stocke dans l’autre DB / table
         try:
-            save_rejected_prompt(user_prompt)
+            save_rejected_prompt(user_prompt, reason=result.get("rationale", "violation"))
             print("🚫 Prompt refused and saved in the rejected prompts database.")
         except Exception as e:
             print("⚠️ Error while saving rejected prompt to DB:", e)
