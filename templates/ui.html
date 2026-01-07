@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8" />
   <title>Pangea – Interface LLM modérée</title>
@@ -27,16 +28,18 @@
       background: var(--bg);
       color: var(--text);
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      overflow: hidden; /* ✅ Only inner content scrolls */
+      overflow: hidden;
+      /* ✅ Only inner content scrolls */
     }
 
     .app {
       width: 100%;
-      height: 100vh;        /* ✅ Take full viewport height */
-      padding: 24px 32px 24px;
+      height: 100vh;
+      /* ✅ Take full viewport height */
+      padding: 16px 24px 16px;
       display: flex;
       flex-direction: column;
-      gap: 24px;
+      gap: 12px;
     }
 
     .top-nav {
@@ -85,68 +88,72 @@
     .hero {
       display: flex;
       align-items: center;
-      gap: 20px;
-      margin-top: 4px;
+      gap: 16px;
+      margin-top: 0;
     }
 
     .hero-icon {
-      width: 60px;
-      height: 60px;
+      width: 48px;
+      height: 48px;
       border-radius: var(--radius-full);
       background: radial-gradient(circle at 30% 20%, #ffffff, #ff4c4b 60%, #111827);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 32px;
+      font-size: 26px;
       box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6);
     }
 
     .hero h1 {
-      font-size: 32px;
+      font-size: 24px;
       line-height: 1.2;
       font-weight: 800;
       letter-spacing: 0.02em;
     }
 
     .pipeline {
-      margin-top: 4px;
-      padding: 16px 18px;
-      border-radius: 14px;
+      margin-top: 0;
+      padding: 12px 14px;
+      border-radius: 12px;
       background: var(--bg-elevated-soft);
       border: 1px solid var(--border-subtle);
-      font-size: 14px;
+      font-size: 13px;
       color: var(--text-muted);
     }
 
     .pipeline h2 {
-      font-size: 16px;
-      margin-bottom: 8px;
+      font-size: 14px;
+      margin-bottom: 6px;
       font-weight: 700;
       color: var(--text);
     }
 
     .pipeline ol {
       margin-left: 18px;
-      line-height: 1.6;
+      line-height: 1.5;
     }
 
     .chat-panel {
-      margin-top: 4px;
+      margin-top: 0;
       display: flex;
       flex-direction: column;
       gap: 12px;
       background: var(--bg-elevated-soft);
       border-radius: 20px;
       border: 1px solid var(--border-subtle);
-      padding: 16px;
-      flex: 1;          /* ✅ Take remaining vertical space */
-      max-height: none; /* ✅ Let it grow; inner content scrolls */
+      padding: 20px;
+      flex: 1;
+      /* ✅ Take remaining vertical space */
+      max-height: none;
+      /* ✅ Let it grow; inner content scrolls */
       min-height: 0;
     }
 
     .chat-history {
-      flex: 1;              /* ✅ Fill space above input area */
-      overflow-y: auto;     /* ✅ Only this part scrolls */
+      flex: 1;
+      /* ✅ Fill space above input area */
+      overflow-y: auto;
+      /* ✅ Only this part scrolls */
       padding: 8px 4px 8px 0;
       display: flex;
       flex-direction: column;
@@ -229,7 +236,7 @@
       padding: 12px 14px;
       font-size: 14px;
       line-height: 1.6;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
       display: flex;
       flex-direction: column;
       gap: 6px;
@@ -259,8 +266,13 @@
     }
 
     @keyframes shimmer {
-      0% { background-position: -200% 0; }
-      100% { background-position: 200% 0; }
+      0% {
+        background-position: -200% 0;
+      }
+
+      100% {
+        background-position: 200% 0;
+      }
     }
 
     .chat-input-area {
@@ -272,7 +284,8 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
-      flex-shrink: 0;  /* ✅ Input area stays visible */
+      flex-shrink: 0;
+      /* ✅ Input area stays visible */
     }
 
     .input-label {
@@ -360,20 +373,158 @@
       color: var(--text-muted);
     }
 
+    /* Settings Panel Styles */
+    .settings-panel {
+      margin-top: 0;
+      display: none;
+      /* Hidden by default */
+      flex-direction: column;
+      gap: 16px;
+      background: var(--bg-elevated-soft);
+      border-radius: 20px;
+      border: 1px solid var(--border-subtle);
+      padding: 20px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .settings-panel.active {
+      display: flex;
+    }
+
+    .settings-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .settings-header h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0;
+    }
+
+    .settings-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow-y: auto;
+    }
+
+    .setting-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .setting-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .setting-description {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .prompt-editor {
+      width: 100%;
+      min-height: 400px;
+      resize: vertical;
+      border-radius: 12px;
+      background: #020617;
+      border: 1px solid var(--border-subtle);
+      padding: 12px;
+      color: var(--text);
+      font-size: 13px;
+      font-family: 'Courier New', monospace;
+      line-height: 1.6;
+      outline: none;
+    }
+
+    .prompt-editor:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(255, 76, 75, 0.4);
+    }
+
+    .settings-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding-top: 12px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .secondary-btn {
+      padding: 10px 20px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border-subtle);
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+
+    .secondary-btn:hover {
+      background: var(--bg-elevated);
+      color: var(--text);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .status-message {
+      font-size: 13px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .status-message.success {
+      display: block;
+      background: rgba(34, 197, 94, 0.1);
+      color: #22c55e;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .status-message.error {
+      display: block;
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
     @media (max-width: 768px) {
       .app {
         padding: 16px 12px 16px;
       }
+
       .hero {
         flex-direction: column;
         align-items: flex-start;
       }
+
       .hero h1 {
         font-size: 26px;
       }
+
       .assistant-answers {
         flex-direction: column;
       }
+
       .bubble {
         max-width: 100%;
       }
@@ -387,6 +538,10 @@
       <div class="tab active" id="tab-chat">
         <span class="tab-icon">💬</span>
         <span>Interface LLM sécurisée</span>
+      </div>
+      <div class="tab" id="tab-settings">
+        <span class="tab-icon">⚙️</span>
+        <span>Paramètres</span>
       </div>
     </header>
 
@@ -420,7 +575,8 @@
         </div>
 
         <div class="input-row">
-          <textarea id="prompt" placeholder="Posez votre question ici… (Entrée pour envoyer, Shift+Entrée pour un retour à la ligne)"></textarea>
+          <textarea id="prompt"
+            placeholder="Posez votre question ici… (Entrée pour envoyer, Shift+Entrée pour un retour à la ligne)"></textarea>
           <button class="primary-btn" id="send-btn">
             <span>Envoyer</span> <span>➤</span>
           </button>
@@ -428,6 +584,42 @@
 
         <div class="hint">
           Entrée pour envoyer · Shift+Entrée pour une nouvelle ligne.
+        </div>
+      </div>
+    </section>
+
+    <!-- Settings Panel -->
+    <section class="settings-panel" id="settings-panel">
+      <div class="settings-header">
+        <span style="font-size: 24px;">⚙️</span>
+        <h2>Paramètres de modération</h2>
+      </div>
+
+      <div class="settings-content">
+        <div class="setting-group">
+          <div class="setting-label">
+            <span>🔒</span>
+            <span>Prompt système Groq (Modération)</span>
+          </div>
+          <div class="setting-description">
+            Personnalisez le prompt système utilisé par Groq pour détecter les injections de prompt et le contenu
+            dangereux.
+            Modifiez les règles, catégories et exemples selon vos besoins spécifiques.
+          </div>
+          <textarea id="system-prompt-editor" class="prompt-editor"
+            placeholder="Chargement du prompt système..."></textarea>
+        </div>
+
+        <div class="settings-actions">
+          <button class="primary-btn" id="save-prompt-btn">
+            <span>💾</span>
+            <span>Enregistrer</span>
+          </button>
+          <button class="secondary-btn" id="reset-prompt-btn">
+            <span>🔄</span>
+            <span>Réinitialiser par défaut</span>
+          </button>
+          <div id="status-message" class="status-message"></div>
         </div>
       </div>
     </section>
@@ -561,9 +753,8 @@
 
         // Prompt rejected by Groq moderation
         if (err.error === "prompt_rejected") {
-          const msg = `Prompt refusé par la modération.\n\nCatégorie : ${
-            err.category || "n/a"
-          }\nRaison : ${err.rationale || "n/a"}`;
+          const msg = `Prompt refusé par la modération.\n\nCatégorie : ${err.category || "n/a"
+            }\nRaison : ${err.rationale || "n/a"}`;
           return {
             answer1: msg,
             answer2: "Aucune seconde réponse (prompt rejeté).",
@@ -627,6 +818,130 @@
       textarea.style.height = "auto";
       textarea.style.height = textarea.scrollHeight + "px";
     });
+
+    // ========== TAB SWITCHING ==========
+    const tabChat = $("#tab-chat");
+    const tabSettings = $("#tab-settings");
+    const chatPanel = $("#chat-panel");
+    const settingsPanel = $("#settings-panel");
+    const hero = $(".hero");
+    const pipeline = $(".pipeline");
+
+    function switchToChat() {
+      tabChat.classList.add("active");
+      tabSettings.classList.remove("active");
+      chatPanel.style.display = "flex";
+      settingsPanel.classList.remove("active");
+      hero.style.display = "flex";
+      pipeline.style.display = "block";
+    }
+
+    function switchToSettings() {
+      tabSettings.classList.add("active");
+      tabChat.classList.remove("active");
+      settingsPanel.classList.add("active");
+      chatPanel.style.display = "none";
+      hero.style.display = "none";
+      pipeline.style.display = "none";
+      loadSystemPrompt(); // Load prompt when switching to settings
+    }
+
+    tabChat.addEventListener("click", switchToChat);
+    tabSettings.addEventListener("click", switchToSettings);
+
+    // ========== SETTINGS PANEL ==========
+    const promptEditor = $("#system-prompt-editor");
+    const savePromptBtn = $("#save-prompt-btn");
+    const resetPromptBtn = $("#reset-prompt-btn");
+    const statusMessage = $("#status-message");
+
+    function showStatus(message, isError = false) {
+      statusMessage.textContent = message;
+      statusMessage.className = "status-message " + (isError ? "error" : "success");
+      setTimeout(() => {
+        statusMessage.className = "status-message";
+      }, 5000);
+    }
+
+    async function loadSystemPrompt() {
+      try {
+        const response = await fetch("/api/prompt/get/");
+        if (!response.ok) throw new Error("Failed to load prompt");
+
+        const data = await response.json();
+        promptEditor.value = data.prompt;
+        promptEditor.placeholder = data.is_custom
+          ? "Prompt personnalisé chargé"
+          : "Prompt par défaut chargé";
+      } catch (error) {
+        console.error("Error loading system prompt:", error);
+        showStatus("❌ Erreur lors du chargement du prompt", true);
+      }
+    }
+
+    async function saveSystemPrompt() {
+      const newPrompt = promptEditor.value.trim();
+      if (!newPrompt) {
+        showStatus("❌ Le prompt ne peut pas être vide", true);
+        return;
+      }
+
+      savePromptBtn.disabled = true;
+      const originalLabel = savePromptBtn.innerHTML;
+      savePromptBtn.innerHTML = `<span>⏳</span><span>Enregistrement...</span>`;
+
+      try {
+        const response = await fetch("/api/prompt/update/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: newPrompt })
+        });
+
+        if (!response.ok) throw new Error("Failed to save prompt");
+
+        const data = await response.json();
+        showStatus("✅ " + data.message, false);
+      } catch (error) {
+        console.error("Error saving system prompt:", error);
+        showStatus("❌ Erreur lors de l'enregistrement du prompt", true);
+      } finally {
+        savePromptBtn.disabled = false;
+        savePromptBtn.innerHTML = originalLabel;
+      }
+    }
+
+    async function resetToDefaultPrompt() {
+      if (!confirm("Êtes-vous sûr de vouloir réinitialiser le prompt par défaut ? Vos modifications seront perdues.")) {
+        return;
+      }
+
+      resetPromptBtn.disabled = true;
+      const originalLabel = resetPromptBtn.innerHTML;
+      resetPromptBtn.innerHTML = `<span>⏳</span><span>Réinitialisation...</span>`;
+
+      try {
+        const response = await fetch("/api/prompt/reset/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" }
+        });
+
+        if (!response.ok) throw new Error("Failed to reset prompt");
+
+        const data = await response.json();
+        await loadSystemPrompt(); // Reload the default prompt
+        showStatus("✅ " + data.message, false);
+      } catch (error) {
+        console.error("Error resetting prompt:", error);
+        showStatus("❌ Erreur lors de la réinitialisation", true);
+      } finally {
+        resetPromptBtn.disabled = false;
+        resetPromptBtn.innerHTML = originalLabel;
+      }
+    }
+
+    savePromptBtn.addEventListener("click", saveSystemPrompt);
+    resetPromptBtn.addEventListener("click", resetToDefaultPrompt);
   </script>
 </body>
+
 </html>
