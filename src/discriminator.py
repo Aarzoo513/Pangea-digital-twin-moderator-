@@ -1,7 +1,7 @@
 import json
 from mistralai import Mistral
 from dotenv import load_dotenv
-from config import DATA_DIR, MISTRAL_API_KEY
+from config import DATA_DIR, MISTRAL_API_KEY, MODERATION_MODEL
 from db.database import save_analysis
 
 load_dotenv()
@@ -9,7 +9,7 @@ load_dotenv()
 
 def moderate_multiple_texts(texts):
     client = Mistral(api_key=MISTRAL_API_KEY)
-    model = "mistral-moderation-latest"
+    model = MODERATION_MODEL
 
     inputs = [
         [{"role": "user", "content": text}]

@@ -107,9 +107,9 @@ celerybeat.pid
 # Environments
 .env
 .venv
-env/
-venv/
-ENV/
+env/*
+venv/*
+ENV/*
 env.bak/
 venv.bak/
 
@@ -136,5 +136,10 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+# Data files
+data/database.db
+data/output.json
+answers_log.json
 
 # End of https://mrkandreev.name/snippets/gitignore-generator/#Python

@@ -4,47 +4,47 @@ from config import DATABASE_PATH, DATA_DIR
 
 
 def init_database():
-    # Crée le dossier /data si nécessaire
+    """Initializes the SQLite DB only if it does NOT already exist."""
+
+    # Ensure /data directory exists
     os.makedirs(DATA_DIR, exist_ok=True)
 
+    # Check if DB file already exists
+    db_exists = os.path.isfile(DATABASE_PATH)
+
+    # Create and connect to DB
     connection = sqlite3.connect(DATABASE_PATH)
     cursor = connection.cursor()
 
-    # Exemple de table (tu peux l’adapter)
-    cursor.execute(
-        """
-        CREATE TABLE IF NOT EXISTS moderation_results (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            prompt TEXT,
-            answer TEXT,
-            sexual INTEGER,
-            hate_and_discrimination INTEGER,
-            violence_and_threats INTEGER,
-            dangerous_and_criminal_content INTEGER,
-            selfharm INTEGER,
-            health INTEGER,
-            financial INTEGER,
-            law INTEGER,
-            pii INTEGER,
-            risk_score INTEGER,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-    """)
-          
-    # Nouvelle table : rejected_prompts
+    # If DB did not exist, create tables
+    if not db_exists:
+        print("Database not found. Creating a new one...")
 
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS rejected_prompts (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            prompt TEXT NOT NULL,
-            reason TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-    """)
+        cursor.execute(
+            """
+            CREATE TABLE moderation_results (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                prompt TEXT,
+                answer TEXT,
+                sexual INTEGER,
+                hate_and_discrimination INTEGER,
+                violence_and_threats INTEGER,
+                dangerous_and_criminal_content INTEGER,
+                selfharm INTEGER,
+                health INTEGER,
+                financial INTEGER,
+                law INTEGER,
+                pii INTEGER,
+                risk_score INTEGER,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+            """
+        )
 
-    connection.commit()
+        connection.commit()
+        print("Database created successfully!")
+
+    else:
+        print("Database already exists. Nothing to do.")
+
     connection.close()
-    print("Database initialized successfully !")
-
-if __name__ == "__main__":
-    init_database()

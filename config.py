@@ -4,8 +4,9 @@ from pathlib import Path
 
 PROJECT_DIR = Path(__file__).parent
 
-# Load environment variables (.env)
-load_dotenv()
+# Explicit path to .env in the same folder as config.py
+ENV_PATH = PROJECT_DIR / ".env"
+load_dotenv(dotenv_path=ENV_PATH)
 
 # ---- API KEYS ----
 MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")

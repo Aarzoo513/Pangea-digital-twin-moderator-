@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Pangea – Interface LLM modérée</title>
+  <style>
+    :root {
+      --bg: #0d1116;
+      --bg-elevated: #262730;
+      --bg-elevated-soft: #181b22;
+      --text: #f8fafc;
+      --text-muted: #9ca3af;
+      --accent: #ff4c4b;
+      --border-subtle: #2b3038;
+      --radius-lg: 16px;
+      --radius-full: 999px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      overflow: hidden;
+      /* ✅ Only inner content scrolls */
+    }
+
+    .app {
+      width: 100%;
+      height: 100vh;
+      /* ✅ Take full viewport height */
+      padding: 16px 24px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .top-nav {
+      display: flex;
+      align-items: flex-end;
+      justify-content: flex-end;
+      gap: 32px;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 8px;
+      margin-bottom: 8px;
+      position: relative;
+      --indicator-left: 0px;
+      --indicator-width: 0px;
+    }
+
+    .top-nav::after {
+      content: "";
+      position: absolute;
+      bottom: -2px;
+      left: var(--indicator-left);
+      width: var(--indicator-width);
+      height: 3px;
+      background: var(--accent);
+      transition: left 0.25s ease, width 0.25s ease;
+    }
+
+    .tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 15px;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px 0;
+    }
+
+    .tab.active {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .tab-icon {
+      font-size: 17px;
+    }
+
+    .hero {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-top: 0;
+    }
+
+    .hero-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-full);
+      background: radial-gradient(circle at 30% 20%, #ffffff, #ff4c4b 60%, #111827);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6);
+    }
+
+    .hero h1 {
+      font-size: 24px;
+      line-height: 1.2;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+    }
+
+    .pipeline {
+      margin-top: 0;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: var(--bg-elevated-soft);
+      border: 1px solid var(--border-subtle);
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .pipeline h2 {
+      font-size: 14px;
+      margin-bottom: 6px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .pipeline ol {
+      margin-left: 18px;
+      line-height: 1.5;
+    }
+
+    .chat-panel {
+      margin-top: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: var(--bg-elevated-soft);
+      border-radius: 20px;
+      border: 1px solid var(--border-subtle);
+      padding: 20px;
+      flex: 1;
+      /* ✅ Take remaining vertical space */
+      max-height: none;
+      /* ✅ Let it grow; inner content scrolls */
+      min-height: 0;
+    }
+
+    .chat-history {
+      flex: 1;
+      /* ✅ Fill space above input area */
+      overflow-y: auto;
+      /* ✅ Only this part scrolls */
+      padding: 8px 4px 8px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      min-height: 0;
+    }
+
+    .chat-empty-hint {
+      text-align: center;
+      margin-top: 40px;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .chat-message {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-width: 100%;
+    }
+
+    .chat-message.user {
+      align-items: flex-end;
+    }
+
+    .chat-message.assistant {
+      align-items: flex-start;
+    }
+
+    .bubble {
+      padding: 10px 14px;
+      border-radius: 18px;
+      font-size: 15px;
+      line-height: 1.5;
+      max-width: 80%;
+      white-space: pre-wrap;
+    }
+
+    .bubble.user {
+      background: linear-gradient(to bottom right, #374151, #111827);
+      border-bottom-right-radius: 4px;
+    }
+
+    .bubble.assistant {
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-bottom-left-radius: 4px;
+    }
+
+    .message-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .assistant-answers-group {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+    }
+
+    .assistant-answers-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .assistant-answers {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .answer-box {
+      flex: 1;
+      background: var(--bg-elevated);
+      border-radius: 16px;
+      border: 1px solid var(--border-subtle);
+      padding: 12px 14px;
+      font-size: 14px;
+      line-height: 1.6;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-height: 80px;
+    }
+
+    .answer-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .answer-content {
+      white-space: pre-wrap;
+      color: var(--text);
+    }
+
+    .skeleton-row {
+      height: 10px;
+      border-radius: var(--radius-full);
+      background: linear-gradient(90deg, #111827, #1f2933, #111827);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      margin-bottom: 6px;
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: -200% 0;
+      }
+
+      100% {
+        background-position: 200% 0;
+      }
+    }
+
+    .chat-input-area {
+      margin-top: 6px;
+      border-radius: 16px;
+      background: #020617;
+      border: 1px solid var(--border-subtle);
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex-shrink: 0;
+      /* ✅ Input area stays visible */
+    }
+
+    .input-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .label-icon {
+      font-size: 16px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+    }
+
+    textarea {
+      width: 100%;
+      resize: none;
+      border-radius: 12px;
+      background: #020617;
+      border: 1px solid var(--border-subtle);
+      padding: 10px 12px;
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.5;
+      outline: none;
+      max-height: 180px;
+      min-height: 60px;
+    }
+
+    textarea::placeholder {
+      color: var(--text-muted);
+    }
+
+    textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(255, 76, 75, 0.4);
+    }
+
+    .primary-btn {
+      padding: 10px 20px;
+      border-radius: var(--radius-full);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: linear-gradient(to bottom right, #272833, #181b22);
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 7px 18px rgba(0, 0, 0, 0.6);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: transform 0.08s ease, box-shadow 0.08s ease,
+        background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .primary-btn:hover {
+      transform: translateY(-1px);
+      background: linear-gradient(to bottom right, #2f303c, #1f222a);
+      border-color: rgba(255, 255, 255, 0.4);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.7);
+    }
+
+    .primary-btn:active {
+      transform: translateY(0);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7);
+    }
+
+    .primary-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .hint {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Settings Panel Styles */
+    .settings-panel {
+      margin-top: 0;
+      display: none;
+      /* Hidden by default */
+      flex-direction: column;
+      gap: 16px;
+      background: var(--bg-elevated-soft);
+      border-radius: 20px;
+      border: 1px solid var(--border-subtle);
+      padding: 20px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .settings-panel.active {
+      display: flex;
+    }
+
+    .settings-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .settings-header h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0;
+    }
+
+    .settings-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow-y: auto;
+    }
+
+    .setting-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .setting-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .setting-description {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .prompt-editor {
+      width: 100%;
+      min-height: 400px;
+      resize: vertical;
+      border-radius: 12px;
+      background: #020617;
+      border: 1px solid var(--border-subtle);
+      padding: 12px;
+      color: var(--text);
+      font-size: 13px;
+      font-family: 'Courier New', monospace;
+      line-height: 1.6;
+      outline: none;
+    }
+
+    .prompt-editor:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(255, 76, 75, 0.4);
+    }
+
+    .settings-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding-top: 12px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .secondary-btn {
+      padding: 10px 20px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border-subtle);
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+
+    .secondary-btn:hover {
+      background: var(--bg-elevated);
+      color: var(--text);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .status-message {
+      font-size: 13px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .status-message.success {
+      display: block;
+      background: rgba(34, 197, 94, 0.1);
+      color: #22c55e;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .status-message.error {
+      display: block;
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    @media (max-width: 768px) {
+      .app {
+        padding: 16px 12px 16px;
+      }
+
+      .hero {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .hero h1 {
+        font-size: 26px;
+      }
+
+      .assistant-answers {
+        flex-direction: column;
+      }
+
+      .bubble {
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <header class="top-nav">
+      <div class="tab active" id="tab-chat">
+        <span class="tab-icon">💬</span>
+        <span>Interface LLM sécurisée</span>
+      </div>
+      <div class="tab" id="tab-settings">
+        <span class="tab-icon">⚙️</span>
+        <span>Paramètres</span>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="hero-icon">🛡️</div>
+      <h1>Pangea – Interface LLM modérée</h1>
+    </section>
+
+    <section class="pipeline">
+      <h2>Pipeline :</h2>
+      <ol>
+        <li>Votre prompt passe d’abord dans le <strong>prompt classifier (Groq)</strong></li>
+        <li>S’il est accepté, un <strong>LLM local (Ollama)</strong> génère 10 réponses</li>
+        <li>Les 10 réponses passent dans le <strong>modérateur Mistral</strong></li>
+        <li>On sélectionne les <strong>2 réponses les plus sûres</strong> et on vous les affiche</li>
+      </ol>
+    </section>
+
+    <section class="chat-panel" id="chat-panel">
+      <div id="chat-history" class="chat-history">
+        <div class="chat-empty-hint">
+          Posez une question ci-dessous. Votre prompt et les 2 réponses sélectionnées
+          s'afficheront ici, comme dans une interface de chat.
+        </div>
+      </div>
+
+      <div class="chat-input-area">
+        <div class="input-label">
+          <span class="label-icon">📝</span>
+          <span>Entrez votre prompt</span>
+        </div>
+
+        <div class="input-row">
+          <textarea id="prompt"
+            placeholder="Posez votre question ici… (Entrée pour envoyer, Shift+Entrée pour un retour à la ligne)"></textarea>
+          <button class="primary-btn" id="send-btn">
+            <span>Envoyer</span> <span>➤</span>
+          </button>
+        </div>
+
+        <div class="hint">
+          Entrée pour envoyer · Shift+Entrée pour une nouvelle ligne.
+        </div>
+      </div>
+    </section>
+
+    <!-- Settings Panel -->
+    <section class="settings-panel" id="settings-panel">
+      <div class="settings-header">
+        <span style="font-size: 24px;">⚙️</span>
+        <h2>Paramètres de modération</h2>
+      </div>
+
+      <div class="settings-content">
+        <div class="setting-group">
+          <div class="setting-label">
+            <span>🔒</span>
+            <span>Prompt système Groq (Modération)</span>
+          </div>
+          <div class="setting-description">
+            Personnalisez le prompt système utilisé par Groq pour détecter les injections de prompt et le contenu
+            dangereux.
+            Modifiez les règles, catégories et exemples selon vos besoins spécifiques.
+          </div>
+          <textarea id="system-prompt-editor" class="prompt-editor"
+            placeholder="Chargement du prompt système..."></textarea>
+        </div>
+
+        <div class="settings-actions">
+          <button class="primary-btn" id="save-prompt-btn">
+            <span>💾</span>
+            <span>Enregistrer</span>
+          </button>
+          <button class="secondary-btn" id="reset-prompt-btn">
+            <span>🔄</span>
+            <span>Réinitialiser par défaut</span>
+          </button>
+          <div id="status-message" class="status-message"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const $ = (sel) => document.querySelector(sel);
+    const chatHistory = $("#chat-history");
+    const textarea = $("#prompt");
+    const sendBtn = $("#send-btn");
+
+    function timeLabel() {
+      return new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+    }
+
+    function clearEmptyHint() {
+      const hint = chatHistory.querySelector(".chat-empty-hint");
+      if (hint) hint.remove();
+    }
+
+    function scrollToBottom() {
+      chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
+
+    function appendUserMessage(text) {
+      clearEmptyHint();
+      const wrapper = document.createElement("div");
+      wrapper.className = "chat-message user";
+
+      const bubble = document.createElement("div");
+      bubble.className = "bubble user";
+      bubble.textContent = text;
+
+      const meta = document.createElement("div");
+      meta.className = "message-meta";
+      meta.textContent = `Vous • ${timeLabel()}`;
+
+      wrapper.append(bubble, meta);
+      chatHistory.appendChild(wrapper);
+      scrollToBottom();
+    }
+
+    function createSkeletonBox(i) {
+      const box = document.createElement("div");
+      box.className = "answer-box";
+
+      const title = document.createElement("div");
+      title.className = "answer-title";
+      title.textContent = i === 0 ? "Réponse 1" : "Réponse 2";
+
+      const r1 = document.createElement("div");
+      const r2 = document.createElement("div");
+      const r3 = document.createElement("div");
+
+      [r1, r2, r3].forEach((r) => (r.className = "skeleton-row"));
+      r3.style.width = "65%";
+
+      box.append(title, r1, r2, r3);
+      return box;
+    }
+
+    function appendAssistantSkeleton() {
+      const wrapper = document.createElement("div");
+      wrapper.className = "chat-message assistant";
+
+      const group = document.createElement("div");
+      group.className = "assistant-answers-group";
+
+      const label = document.createElement("div");
+      label.className = "assistant-answers-label";
+      label.textContent = "Pangea • Sélection des 2 réponses les plus sûres…";
+
+      const answers = document.createElement("div");
+      answers.className = "assistant-answers";
+
+      answers.append(createSkeletonBox(0), createSkeletonBox(1));
+      group.append(label, answers);
+      wrapper.appendChild(group);
+      chatHistory.appendChild(wrapper);
+      scrollToBottom();
+      return wrapper;
+    }
+
+    function replaceSkeletonWithAnswers(wrapper, answer1, answer2) {
+      wrapper.innerHTML = "";
+
+      const group = document.createElement("div");
+      group.className = "assistant-answers-group";
+
+      const label = document.createElement("div");
+      label.className = "assistant-answers-label";
+      label.textContent = `Pangea • 2 réponses sélectionnées · ${timeLabel()}`;
+
+      const answers = document.createElement("div");
+      answers.className = "assistant-answers";
+
+      [answer1, answer2].forEach((content, idx) => {
+        const box = document.createElement("div");
+        box.className = "answer-box";
+
+        const title = document.createElement("div");
+        title.className = "answer-title";
+        title.textContent = idx === 0 ? "Réponse 1" : "Réponse 2";
+
+        const body = document.createElement("div");
+        body.className = "answer-content";
+        body.textContent = content;
+
+        box.append(title, body);
+        answers.appendChild(box);
+      });
+
+      group.append(label, answers);
+      wrapper.appendChild(group);
+      scrollToBottom();
+    }
+
+    async function callPipeline(prompt) {
+      const response = await fetch("/api/ask/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          // If you later remove @csrf_exempt, you'll need to send the CSRF token here
+          // "X-CSRFToken": getCookie("csrftoken"),
+        },
+        body: JSON.stringify({ prompt }),
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+
+        // Prompt rejected by Groq moderation
+        if (err.error === "prompt_rejected") {
+          const msg = `Prompt refusé par la modération.\n\nCatégorie : ${err.category || "n/a"
+            }\nRaison : ${err.rationale || "n/a"}`;
+          return {
+            answer1: msg,
+            answer2: "Aucune seconde réponse (prompt rejeté).",
+          };
+        }
+
+        // Generic error
+        return {
+          answer1: "Erreur lors de l’appel au backend.",
+          answer2: `Status: ${response.status}`,
+        };
+      }
+
+      const data = await response.json();
+
+      return {
+        answer1: data.answer1 || "",
+        answer2: data.answer2 || "",
+      };
+    }
+
+
+    async function handleSend() {
+      const text = textarea.value.trim();
+      if (!text) return;
+
+      appendUserMessage(text);
+      textarea.value = "";
+      textarea.style.height = "auto";
+
+      sendBtn.disabled = true;
+      const originalLabel = sendBtn.innerHTML;
+      sendBtn.innerHTML = `<span>Génération…</span> <span>⏳</span>`;
+
+      const skeleton = appendAssistantSkeleton();
+
+      try {
+        const { answer1, answer2 } = await callPipeline(text);
+        replaceSkeletonWithAnswers(skeleton, answer1, answer2);
+      } catch (err) {
+        console.error(err);
+        replaceSkeletonWithAnswers(
+          skeleton,
+          "Erreur lors de l’appel au pipeline.",
+          "Aucune seconde réponse."
+        );
+      } finally {
+        sendBtn.disabled = false;
+        sendBtn.innerHTML = originalLabel;
+      }
+    }
+
+    sendBtn.addEventListener("click", handleSend);
+    textarea.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        handleSend();
+      }
+    });
+    textarea.addEventListener("input", () => {
+      textarea.style.height = "auto";
+      textarea.style.height = textarea.scrollHeight + "px";
+    });
+
+    // ========== TAB SWITCHING ==========
+    const tabChat = $("#tab-chat");
+    const tabSettings = $("#tab-settings");
+    const chatPanel = $("#chat-panel");
+    const settingsPanel = $("#settings-panel");
+    const hero = $(".hero");
+    const pipeline = $(".pipeline");
+
+    function switchToChat() {
+      tabChat.classList.add("active");
+      tabSettings.classList.remove("active");
+      chatPanel.style.display = "flex";
+      settingsPanel.classList.remove("active");
+      hero.style.display = "flex";
+      pipeline.style.display = "block";
+    }
+
+    function switchToSettings() {
+      tabSettings.classList.add("active");
+      tabChat.classList.remove("active");
+      settingsPanel.classList.add("active");
+      chatPanel.style.display = "none";
+      hero.style.display = "none";
+      pipeline.style.display = "none";
+      loadSystemPrompt(); // Load prompt when switching to settings
+    }
+
+    tabChat.addEventListener("click", switchToChat);
+    tabSettings.addEventListener("click", switchToSettings);
+
+    // ========== SETTINGS PANEL ==========
+    const promptEditor = $("#system-prompt-editor");
+    const savePromptBtn = $("#save-prompt-btn");
+    const resetPromptBtn = $("#reset-prompt-btn");
+    const statusMessage = $("#status-message");
+
+    function showStatus(message, isError = false) {
+      statusMessage.textContent = message;
+      statusMessage.className = "status-message " + (isError ? "error" : "success");
+      setTimeout(() => {
+        statusMessage.className = "status-message";
+      }, 5000);
+    }
+
+    async function loadSystemPrompt() {
+      try {
+        const response = await fetch("/api/prompt/get/");
+        if (!response.ok) throw new Error("Failed to load prompt");
+
+        const data = await response.json();
+        promptEditor.value = data.prompt;
+        promptEditor.placeholder = data.is_custom
+          ? "Prompt personnalisé chargé"
+          : "Prompt par défaut chargé";
+      } catch (error) {
+        console.error("Error loading system prompt:", error);
+        showStatus("❌ Erreur lors du chargement du prompt", true);
+      }
+    }
+
+    async function saveSystemPrompt() {
+      const newPrompt = promptEditor.value.trim();
+      if (!newPrompt) {
+        showStatus("❌ Le prompt ne peut pas être vide", true);
+        return;
+      }
+
+      savePromptBtn.disabled = true;
+      const originalLabel = savePromptBtn.innerHTML;
+      savePromptBtn.innerHTML = `<span>⏳</span><span>Enregistrement...</span>`;
+
+      try {
+        const response = await fetch("/api/prompt/update/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: newPrompt })
+        });
+
+        if (!response.ok) throw new Error("Failed to save prompt");
+
+        const data = await response.json();
+        showStatus("✅ " + data.message, false);
+      } catch (error) {
+        console.error("Error saving system prompt:", error);
+        showStatus("❌ Erreur lors de l'enregistrement du prompt", true);
+      } finally {
+        savePromptBtn.disabled = false;
+        savePromptBtn.innerHTML = originalLabel;
+      }
+    }
+
+    async function resetToDefaultPrompt() {
+      if (!confirm("Êtes-vous sûr de vouloir réinitialiser le prompt par défaut ? Vos modifications seront perdues.")) {
+        return;
+      }
+
+      resetPromptBtn.disabled = true;
+      const originalLabel = resetPromptBtn.innerHTML;
+      resetPromptBtn.innerHTML = `<span>⏳</span><span>Réinitialisation...</span>`;
+
+      try {
+        const response = await fetch("/api/prompt/reset/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" }
+        });
+
+        if (!response.ok) throw new Error("Failed to reset prompt");
+
+        const data = await response.json();
+        await loadSystemPrompt(); // Reload the default prompt
+        showStatus("✅ " + data.message, false);
+      } catch (error) {
+        console.error("Error resetting prompt:", error);
+        showStatus("❌ Erreur lors de la réinitialisation", true);
+      } finally {
+        resetPromptBtn.disabled = false;
+        resetPromptBtn.innerHTML = originalLabel;
+      }
+    }
+
+    savePromptBtn.addEventListener("click", saveSystemPrompt);
+    resetPromptBtn.addEventListener("click", resetToDefaultPrompt);
+  </script>
+</body>
+
+</html>
